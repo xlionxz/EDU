@@ -52,6 +52,36 @@
   --transition-smooth: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* ---------- Dark Theme Overrides ---------- */
+[data-theme="dark"] {
+  /* Deep Canyon / Dark Desert Backgrounds */
+  --bg-primary: #1f1814;
+  --bg-secondary: #2c221d;
+  
+  /* Dark Glassmorphism */
+  --bg-card: rgba(20, 15, 12, 0.5);
+  --bg-card-hover: rgba(40, 30, 25, 0.7);
+  --bg-glass: rgba(20, 15, 12, 0.6);
+  --bg-glass-border: rgba(217, 119, 87, 0.2);
+
+  /* Light text for dark theme */
+  --text-primary: #f2e9e1;
+  --text-secondary: #c2ada0;
+  --text-muted: #8c7769;
+
+  /* Adjust Accents slightly for contrast if needed, but keeping core colors */
+  --accent-purple: #e08364; /* Terracotta */
+  --accent-cyan: #5fa5bb;   /* Oasis Blue */
+  
+  /* Darker shadows */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+  
+  /* Sidebar Gradient for Dark Mode */
+  --gradient-sidebar: linear-gradient(180deg, rgba(30, 22, 18, 0.95), rgba(44, 34, 29, 0.95));
+}
+
 /* ---------- Reset ---------- */
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 html { scroll-behavior: smooth; }
@@ -234,6 +264,22 @@ body::after {
 }
 .mobile-toggle:hover { background: var(--bg-card-hover); }
 
+/* Theme Toggle Button (Desktop & Mobile accessible) */
+.theme-toggle {
+  position: fixed; top: 24px; right: 40px; z-index: 90;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--bg-glass); border: 1px solid var(--bg-glass-border);
+  color: var(--text-primary); font-size: 20px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all var(--transition-fast); backdrop-filter: blur(10px);
+  box-shadow: var(--shadow-sm);
+}
+.theme-toggle:hover { 
+  background: var(--bg-card-hover); 
+  transform: scale(1.05) rotate(15deg); 
+  box-shadow: var(--shadow-md); 
+}
+
 /* ---------- Views ---------- */
 .view { display: none; animation: fadeSlideIn 0.4s ease-out; }
 .view.active { display: block; }
@@ -370,10 +416,11 @@ body::after {
 .quiz-question-text { font-size: 20px; font-weight: 600; line-height: 1.5; margin-bottom: 28px; color: var(--text-primary); }
 
 .quiz-options { display: flex; flex-direction: column; gap: 12px; }
-.quiz-option { padding: 16px 20px; border-radius: var(--radius-md); border: 1px solid var(--bg-glass-border); background: var(--bg-card); cursor: pointer; transition: all var(--transition-fast); display: flex; align-items: center; gap: 14px; font-size: 15px; }
-.quiz-option:hover:not(.disabled) { background: #fff; border-color: rgba(217,119,87,0.4); transform: translateX(4px); box-shadow: var(--shadow-sm); }
+.quiz-option { padding: 16px 20px; border-radius: var(--radius-md); border: 1px solid var(--bg-glass-border); background: var(--bg-card); cursor: pointer; transition: all var(--transition-fast); display: flex; align-items: center; gap: 14px; font-size: 15px; color: var(--text-primary); }
+.quiz-option:hover:not(.disabled) { background: var(--bg-card-hover); border-color: rgba(217,119,87,0.4); transform: translateX(4px); box-shadow: var(--shadow-sm); }
 .quiz-option .option-letter { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; transition: all var(--transition-fast); }
-.quiz-option.selected { border-color: var(--accent-purple); background: #fff; }
+[data-theme="dark"] .quiz-option .option-letter { background: rgba(255,255,255,0.1); }
+.quiz-option.selected { border-color: var(--accent-purple); background: var(--bg-glass); }
 .quiz-option.selected .option-letter { background: var(--accent-purple); color: white; }
 .quiz-option.correct { border-color: var(--accent-green); background: rgba(107,142,35,0.1); }
 .quiz-option.correct .option-letter { background: var(--accent-green); color: white; }
@@ -390,19 +437,19 @@ body::after {
 .quiz-btn.secondary:hover:not(:disabled) { background: #fff; box-shadow: var(--shadow-sm); }
 
 /* ---------- Reading Passage ---------- */
-.reading-passage { background: #fff; border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-bottom: 28px; box-shadow: var(--shadow-sm); }
-.reading-passage::before { content: '📖 Reading Passage'; display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.reading-passage { background: var(--bg-card); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-bottom: 28px; box-shadow: var(--shadow-sm); }
+.reading-passage::before { content: '📖 Reading Passage'; display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--bg-glass-border); }
 .reading-passage h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--accent-purple); }
 .reading-passage .passage-text { font-size: 15px; line-height: 1.8; color: var(--text-secondary); }
 .reading-passage .passage-text p { margin-bottom: 12px; }
 
 /* ---------- Writing View ---------- */
-.writing-prompt-card { background: #fff; border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
-.writing-prompt-card::before { content: '✍️ Writing Prompt'; display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); }
-.writing-prompt-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.writing-prompt-card { background: var(--bg-card); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-bottom: 24px; box-shadow: var(--shadow-sm); }
+.writing-prompt-card::before { content: '✍️ Writing Prompt'; display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--bg-glass-border); }
+.writing-prompt-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; color: var(--text-primary); }
 .writing-prompt-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
 
-.writing-area { width: 100%; min-height: 250px; background: #fff; border: 1px solid var(--bg-glass-border); border-radius: var(--radius-lg); padding: 20px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.8; resize: vertical; outline: none; transition: all var(--transition-fast); margin-bottom: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
+.writing-area { width: 100%; min-height: 250px; background: var(--bg-glass); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-lg); padding: 20px; color: var(--text-primary); font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.8; resize: vertical; outline: none; transition: all var(--transition-fast); margin-bottom: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.02); }
 .writing-area:focus { border-color: var(--accent-purple); box-shadow: 0 0 0 3px rgba(217,119,87,0.1); }
 .writing-area::placeholder { color: var(--text-muted); }
 
@@ -411,8 +458,8 @@ body::after {
 .writing-word-count .min-words.met { color: var(--accent-green); }
 
 /* AI Feedback Panel */
-.ai-feedback-panel { background: #fff; border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-top: 24px; box-shadow: var(--shadow-sm); animation: fadeSlideIn 0.5s ease-out; }
-.ai-feedback-panel h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
+.ai-feedback-panel { background: var(--bg-card); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-xl); padding: 36px; margin-top: 24px; box-shadow: var(--shadow-sm); animation: fadeSlideIn 0.5s ease-out; }
+.ai-feedback-panel h3 { font-size: 20px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; color: var(--text-primary); }
 .ai-score-overview { display: flex; align-items: center; gap: 32px; margin-bottom: 28px; padding-bottom: 24px; border-bottom: 1px solid rgba(0,0,0,0.05); }
 .ai-score-circle { width: 120px; height: 120px; position: relative; flex-shrink: 0; }
 .ai-score-circle svg { transform: rotate(-90deg); }
@@ -465,8 +512,9 @@ body::after {
 
 .task-list { display: flex; flex-direction: column; gap: 12px; }
 .task-item { background: var(--bg-glass); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-lg); padding: 20px 24px; display: flex; align-items: center; gap: 16px; transition: all var(--transition-fast); box-shadow: var(--shadow-sm); }
-.task-item:hover { background: #fff; box-shadow: var(--shadow-md); }
-.task-checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); flex-shrink: 0; font-size: 12px; color: transparent; background: #fff; }
+.task-item:hover { background: var(--bg-card-hover); box-shadow: var(--shadow-md); }
+.task-checkbox { width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(0,0,0,0.1); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all var(--transition-fast); flex-shrink: 0; font-size: 12px; color: transparent; background: var(--bg-card); }
+[data-theme="dark"] .task-checkbox { border-color: rgba(255,255,255,0.2); }
 .task-checkbox.checked { background: var(--accent-green); border-color: var(--accent-green); color: white; }
 .task-item-info { flex: 1; }
 .task-item-info h4 { font-size: 14px; font-weight: 600; }
@@ -477,7 +525,7 @@ body::after {
 
 .history-list { display: flex; flex-direction: column; gap: 12px; }
 .history-item { background: var(--bg-glass); border: 1px solid var(--bg-glass-border); border-radius: var(--radius-lg); padding: 20px 24px; display: flex; align-items: center; gap: 16px; transition: all var(--transition-fast); box-shadow: var(--shadow-sm); }
-.history-item:hover { background: #fff; }
+.history-item:hover { background: var(--bg-card-hover); }
 .history-icon { width: 44px; height: 44px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0; }
 .history-info { flex: 1; }
 .history-info h4 { font-size: 14px; font-weight: 600; }

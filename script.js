@@ -42,7 +42,8 @@ function getDefaultState() {
     return {
         history: [], streak: 0, lastActiveDate: null, 
         settings: { dailyReminder: true, achievementAlerts: true, showCorrectAnswer: true, soundEffects: false },
-        joinedDate: new Date().toISOString()
+        joinedDate: new Date().toISOString(),
+        theme: "light"
     };
 }
 
@@ -133,6 +134,29 @@ document.getElementById("nav-logout").addEventListener("click", () => {
     authOverlay.classList.remove("hidden");
     document.getElementById("sidebar").classList.remove("open");
     document.getElementById("sidebarOverlay").classList.remove("show");
+    document.documentElement.removeAttribute("data-theme");
+});
+
+// ==========================================
+// THEME TOGGLE
+// ==========================================
+const themeToggle = document.getElementById("themeToggle");
+
+function applyTheme() {
+    if (appState && appState.theme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+        themeToggle.textContent = "☀️";
+    } else {
+        document.documentElement.removeAttribute("data-theme");
+        themeToggle.textContent = "🌙";
+    }
+}
+
+themeToggle.addEventListener("click", () => {
+    if (!appState) return;
+    appState.theme = appState.theme === "dark" ? "light" : "dark";
+    applyTheme();
+    saveState();
 });
 
 
@@ -686,6 +710,7 @@ if(confirm("Reset all progress? This cannot be undone for this user.")){appState
 // ==========================================
 function initApp() {
     updateStreak();
+    applyTheme();
     refreshDashboard();
     renderDailyTasks();
 }
