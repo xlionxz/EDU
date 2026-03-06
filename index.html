@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description"
-        content="EduVerse — An interactive education platform with quizzes for English and Math to boost your skills.">
-    <title>EduVerse — Learn Smarter</title>
+        content="EDEDEDI — An interactive education platform with quizzes for English and Math with multiple difficulty levels.">
+    <title>EDEDEDI — Learn Smarter</title>
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -82,7 +82,7 @@
         <!-- ========== MAIN CONTENT ========== -->
         <main class="main-content">
 
-            <!-- ===== DASHBOARD VIEW ===== -->
+            <!-- ===== DASHBOARD ===== -->
             <section class="view active" id="view-dashboard">
                 <div class="greeting-banner">
                     <h2>Welcome back, <span>Student</span> 👋</h2>
@@ -127,7 +127,6 @@
                 <h3 class="section-heading"><span class="dot"></span> Your Subjects</h3>
 
                 <div class="subjects-grid">
-                    <!-- English Card -->
                     <div class="subject-card english" id="subject-english" role="button" tabindex="0">
                         <div class="subject-card-header">
                             <div class="subject-icon">📖</div>
@@ -141,18 +140,15 @@
                             </div>
                         </div>
                         <h3>English</h3>
-                        <p class="subject-desc">Improve your grammar, vocabulary, and reading comprehension with
-                            interactive quizzes.</p>
+                        <p class="subject-desc">Grammar, Reading Comprehension, and Writing — all levels from Beginner to Expert.</p>
                         <div class="subject-card-footer">
                             <div class="subject-meta">
-                                <span>📝 10 Questions</span>
-                                <span>⏱ ~5 min</span>
+                                <span>📝 Grammar · Reading · Writing</span>
                             </div>
-                            <button class="start-btn">Start Quiz →</button>
+                            <button class="start-btn">Explore →</button>
                         </div>
                     </div>
 
-                    <!-- Math Card -->
                     <div class="subject-card math" id="subject-math" role="button" tabindex="0">
                         <div class="subject-card-header">
                             <div class="subject-icon">🔢</div>
@@ -166,30 +162,82 @@
                             </div>
                         </div>
                         <h3>Mathematics</h3>
-                        <p class="subject-desc">Sharpen your math skills from arithmetic to algebra with challenging
-                            practice problems.</p>
+                        <p class="subject-desc">Arithmetic to Advanced Algebra — challenge yourself at every difficulty level.</p>
                         <div class="subject-card-footer">
                             <div class="subject-meta">
-                                <span>📝 10 Questions</span>
-                                <span>⏱ ~5 min</span>
+                                <span>📝 4 Difficulty Levels</span>
                             </div>
-                            <button class="start-btn">Start Quiz →</button>
+                            <button class="start-btn">Explore →</button>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <!-- ===== QUIZ VIEW ===== -->
+            <!-- ===== DIFFICULTY SELECTOR ===== -->
+            <section class="view" id="view-difficulty">
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <button class="quiz-back-btn" id="diff-back-btn" aria-label="Back">←</button>
+                        <div class="quiz-title-area">
+                            <h2 id="diff-subject-title">Choose Difficulty</h2>
+                            <p>Select a difficulty level that matches your skill</p>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Type Tabs (English only) -->
+                    <div class="quiz-type-tabs" id="quiz-type-tabs" style="display:none">
+                        <button class="quiz-type-tab active" data-type="grammar">📝 Grammar</button>
+                        <button class="quiz-type-tab" data-type="reading">📖 Reading</button>
+                        <button class="quiz-type-tab" data-type="writing">✍️ Writing</button>
+                    </div>
+
+                    <div class="difficulty-grid">
+                        <div class="difficulty-card beginner" data-diff="beginner">
+                            <div class="diff-icon">🌱</div>
+                            <h3>Beginner</h3>
+                            <p>Foundational concepts & basic vocabulary</p>
+                            <div class="diff-level-bar">
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="difficulty-card intermediate" data-diff="intermediate">
+                            <div class="diff-icon">📘</div>
+                            <h3>Intermediate</h3>
+                            <p>Build on your knowledge with harder challenges</p>
+                            <div class="diff-level-bar">
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="difficulty-card advanced" data-diff="advanced">
+                            <div class="diff-icon">🔥</div>
+                            <h3>Advanced</h3>
+                            <p>Complex problems for experienced learners</p>
+                            <div class="diff-level-bar">
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                        <div class="difficulty-card expert" data-diff="expert">
+                            <div class="diff-icon">💎</div>
+                            <h3>Expert</h3>
+                            <p>Master-level questions for the best of the best</p>
+                            <div class="diff-level-bar">
+                                <span></span><span></span><span></span><span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ===== QUIZ VIEW (Grammar / Math MCQ) ===== -->
             <section class="view" id="view-quiz">
                 <div class="quiz-container">
                     <div class="quiz-header">
                         <button class="quiz-back-btn" id="quiz-back-btn" aria-label="Back">←</button>
                         <div class="quiz-title-area">
-                            <h2 id="quiz-subject-title">English Quiz</h2>
+                            <h2 id="quiz-subject-title">Quiz</h2>
                             <p id="quiz-subject-subtitle">Answer all questions to complete the quiz</p>
                         </div>
                     </div>
-
                     <div class="quiz-progress">
                         <div class="quiz-progress-info">
                             <span id="quiz-progress-label">Question 1 of 10</span>
@@ -199,36 +247,57 @@
                             <div class="quiz-progress-fill english" id="quiz-progress-fill" style="width: 10%"></div>
                         </div>
                     </div>
-
-                    <div id="quiz-body">
-                        <!-- Rendered by JS -->
-                    </div>
+                    <div id="quiz-body"></div>
                 </div>
             </section>
 
-            <!-- ===== DAILY TASKS VIEW ===== -->
+            <!-- ===== READING VIEW ===== -->
+            <section class="view" id="view-reading">
+                <div class="quiz-container">
+                    <div class="quiz-header">
+                        <button class="quiz-back-btn" id="reading-back-btn" aria-label="Back">←</button>
+                        <div class="quiz-title-area">
+                            <h2 id="reading-title">Reading Comprehension</h2>
+                            <p id="reading-subtitle">Read the passage carefully, then answer the questions below</p>
+                        </div>
+                    </div>
+                    <div id="reading-body"></div>
+                </div>
+            </section>
+
+            <!-- ===== WRITING VIEW ===== -->
+            <section class="view" id="view-writing">
+                <div class="writing-container">
+                    <div class="quiz-header">
+                        <button class="quiz-back-btn" id="writing-back-btn" aria-label="Back">←</button>
+                        <div class="quiz-title-area">
+                            <h2 id="writing-title">Writing Task</h2>
+                            <p id="writing-subtitle">Write your essay based on the prompt below</p>
+                        </div>
+                    </div>
+                    <div id="writing-body"></div>
+                </div>
+            </section>
+
+            <!-- ===== DAILY TASKS ===== -->
             <section class="view" id="view-daily-tasks">
                 <div class="section-page-header">
                     <h2>📋 Daily Tasks</h2>
                     <p>Complete your tasks today to keep your streak alive!</p>
                 </div>
-                <div class="task-list" id="daily-task-list">
-                    <!-- Rendered by JS -->
-                </div>
+                <div class="task-list" id="daily-task-list"></div>
             </section>
 
-            <!-- ===== TASK HISTORY VIEW ===== -->
+            <!-- ===== TASK HISTORY ===== -->
             <section class="view" id="view-task-history">
                 <div class="section-page-header">
                     <h2>📜 Task History</h2>
                     <p>Review your past quiz results and performance</p>
                 </div>
-                <div class="history-list" id="history-list">
-                    <!-- Rendered by JS -->
-                </div>
+                <div class="history-list" id="history-list"></div>
             </section>
 
-            <!-- ===== PROFILE VIEW ===== -->
+            <!-- ===== PROFILE ===== -->
             <section class="view" id="view-profile">
                 <div class="section-page-header">
                     <h2>👤 Personal Profile</h2>
@@ -257,18 +326,16 @@
                 </div>
             </section>
 
-            <!-- ===== ACHIEVEMENTS VIEW ===== -->
+            <!-- ===== ACHIEVEMENTS ===== -->
             <section class="view" id="view-achievements">
                 <div class="section-page-header">
                     <h2>🏆 Achievements</h2>
                     <p>Unlock badges by completing quizzes and achieving high scores</p>
                 </div>
-                <div class="achievements-grid" id="achievements-grid">
-                    <!-- Rendered by JS -->
-                </div>
+                <div class="achievements-grid" id="achievements-grid"></div>
             </section>
 
-            <!-- ===== SETTINGS VIEW ===== -->
+            <!-- ===== SETTINGS ===== -->
             <section class="view" id="view-settings">
                 <div class="section-page-header">
                     <h2>⚙️ Settings</h2>
@@ -322,7 +389,7 @@
                 </div>
             </section>
 
-            <!-- ===== OPTIONAL PROGRAMS VIEW ===== -->
+            <!-- ===== OPTIONAL PROGRAMS ===== -->
             <section class="view" id="view-optional-programs">
                 <div class="section-page-header">
                     <h2>📦 Optional Programs</h2>
@@ -333,37 +400,25 @@
                         <span class="program-badge free">Free</span>
                         <h3>Speed Reading</h3>
                         <p>Train your reading speed with timed passages and comprehension checks.</p>
-                        <div class="program-meta">
-                            <span>📖 8 Lessons</span>
-                            <span>⏱ 2 hrs</span>
-                        </div>
+                        <div class="program-meta"><span>📖 8 Lessons</span><span>⏱ 2 hrs</span></div>
                     </div>
                     <div class="program-card">
                         <span class="program-badge free">Free</span>
                         <h3>Mental Math</h3>
                         <p>Master calculations in your head with progressive difficulty levels.</p>
-                        <div class="program-meta">
-                            <span>🔢 12 Lessons</span>
-                            <span>⏱ 3 hrs</span>
-                        </div>
+                        <div class="program-meta"><span>🔢 12 Lessons</span><span>⏱ 3 hrs</span></div>
                     </div>
                     <div class="program-card">
                         <span class="program-badge premium">Premium</span>
                         <h3>Creative Writing</h3>
                         <p>Develop your writing voice through guided exercises and prompts.</p>
-                        <div class="program-meta">
-                            <span>✍️ 10 Lessons</span>
-                            <span>⏱ 4 hrs</span>
-                        </div>
+                        <div class="program-meta"><span>✍️ 10 Lessons</span><span>⏱ 4 hrs</span></div>
                     </div>
                     <div class="program-card">
                         <span class="program-badge premium">Premium</span>
                         <h3>Advanced Algebra</h3>
                         <p>Dive deeper into equations, inequalities, and polynomial functions.</p>
-                        <div class="program-meta">
-                            <span>📐 15 Lessons</span>
-                            <span>⏱ 5 hrs</span>
-                        </div>
+                        <div class="program-meta"><span>📐 15 Lessons</span><span>⏱ 5 hrs</span></div>
                     </div>
                 </div>
             </section>
@@ -371,6 +426,7 @@
         </main>
     </div>
 
+    <script src="quizdata.js"></script>
     <script src="script.js"></script>
 </body>
 
