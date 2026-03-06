@@ -22,13 +22,119 @@ const achievementsDef=[
 ];
 
 // ==========================================
-// STATE
+// AUTHENTICATION & STATE ENGINE
 // ==========================================
-const STORAGE_KEY="edededi_data";
-function getDefaultState(){return{history:[],streak:0,lastActiveDate:null,settings:{dailyReminder:true,achievementAlerts:true,showCorrectAnswer:true,soundEffects:false}};}
-function loadState(){try{const r=localStorage.getItem(STORAGE_KEY);if(r)return{...getDefaultState(),...JSON.parse(r)};}catch(e){}return getDefaultState();}
-function saveState(s){localStorage.setItem(STORAGE_KEY,JSON.stringify(s));}
-let appState=loadState();
+let currentUser = null;
+let appState = null;
+
+function getUsers() {
+    try {
+        const u = localStorage.getItem("edededi_users");
+        if(u) return JSON.parse(u);
+    } catch(e) {}
+    return {};
+}
+function saveUsers(users) {
+    localStorage.setItem("edededi_users", JSON.stringify(users));
+}
+
+function getDefaultState() {
+    return {
+        history: [], streak: 0, lastActiveDate: null, 
+        settings: { dailyReminder: true, achievementAlerts: true, showCorrectAnswer: true, soundEffects: false },
+        joinedDate: new Date().toISOString()
+    };
+}
+
+function loadStateForUser(username) {
+    try {
+        const r = localStorage.getItem("edededi_data_" + username);
+        if(r) return { ...getDefaultState(), ...JSON.parse(r) };
+    } catch(e) {}
+    return getDefaultState();
+}
+
+function saveState() {
+    if(!currentUser) return;
+    localStorage.setItem("edededi_data_" + currentUser, JSON.stringify(appState));
+}
+
+// Auth UI Logic
+const authOverlay = document.getElementById("auth-overlay");
+const authUsername = document.getElementById("auth-username");
+const authPassword = document.getElementById("auth-password");
+const authBtn = document.getElementById("auth-btn");
+const authError = document.getElementById("auth-error");
+const authToggle = document.getElementById("auth-toggle");
+const authSubtitle = document.getElementById("auth-subtitle");
+
+let isLoginMode = true;
+
+authToggle.addEventListener("click", () => {
+    isLoginMode = !isLoginMode;
+    authSubtitle.textContent = isLoginMode ? "Login to your account" : "Create a new account";
+    authBtn.textContent = isLoginMode ? "Login" : "Sign Up";
+    authToggle.textContent = isLoginMode ? "Don't have an account? Sign up here" : "Already have an account? Login here";
+    authError.textContent = "";
+});
+
+authBtn.addEventListener("click", handleAuth);
+
+function handleAuth() {
+    const user = authUsername.value.trim().toLowerCase();
+    const pass = authPassword.value;
+    if(!user || !pass) {
+        authError.textContent = "Please enter both username and password.";
+        return;
+    }
+    
+    const users = getUsers();
+    if(isLoginMode) {
+        if(users[user] && users[user] === pass) {
+            login(user);
+        } else {
+            authError.textContent = "Invalid username or password.";
+        }
+    } else {
+        if(users[user]) {
+            authError.textContent = "Username already exists.";
+        } else {
+            users[user] = pass;
+            saveUsers(users);
+            login(user);
+        }
+    }
+}
+
+function login(username) {
+    currentUser = username;
+    appState = loadStateForUser(username);
+    authOverlay.classList.add("hidden");
+    
+    // Update UI profile elements
+    document.getElementById("sidebar-name").textContent = username;
+    document.getElementById("sidebar-avatar").textContent = username.charAt(0).toUpperCase();
+    document.getElementById("dash-name").textContent = username;
+    document.getElementById("profile-name").textContent = username;
+    document.getElementById("profile-avatar").textContent = username.charAt(0).toUpperCase();
+    
+    const d = new Date(appState.joinedDate);
+    const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    document.getElementById("profile-sub").textContent = "Player • Joined " + months[d.getMonth()] + " " + d.getFullYear();
+    
+    initApp();
+}
+
+document.getElementById("nav-logout").addEventListener("click", () => {
+    currentUser = null;
+    appState = null;
+    authUsername.value = "";
+    authPassword.value = "";
+    authOverlay.classList.remove("hidden");
+    document.getElementById("sidebar").classList.remove("open");
+    document.getElementById("sidebarOverlay").classList.remove("show");
+});
+
 
 // ==========================================
 // DERIVED STATS
@@ -47,6 +153,15 @@ const xp=h.reduce((a,r)=>a+(r.xp||0),0);
 const bestEnglish=h.filter(r=>r.subject==="english"&&r.percentage).reduce((b,r)=>r.percentage>b?r.percentage:b,0);
 const bestMath=h.filter(r=>r.subject==="math"&&r.percentage).reduce((b,r)=>r.percentage>b?r.percentage:b,0);
 const diffLevels=new Set(h.map(r=>r.difficulty)).size;
+
+// Level calculation (rough formula: Level 1 + (XP / 200))
+const level = Math.floor(1 + (xp / 200));
+let title = "Beginner";
+if(level >= 3) title = "Explorer";
+if(level >= 5) title = "Scholar";
+if(level >= 10) title = "Master";
+document.getElementById("sidebar-level").textContent = `Level ${level} — ${title}`;
+
 return{totalQuizzes,totalCorrect,totalQuestions,englishCount,mathCount,writingCount,hasPerfect,avgAccuracy,xp,bestEnglish,bestMath,streak:appState.streak,diffLevels};
 }
 
@@ -57,7 +172,7 @@ const yesterday=new Date(Date.now()-86400000).toISOString().slice(0,10);
 if(appState.lastActiveDate===yesterday)appState.streak+=1;
 else if(appState.lastActiveDate!==today)appState.streak=1;
 appState.lastActiveDate=today;
-saveState(appState);
+saveState();
 }
 
 // ==========================================
@@ -121,10 +236,12 @@ document.getElementById("subject-english").addEventListener("click",()=>showDiff
 document.getElementById("subject-math").addEventListener("click",()=>showDifficultySelector("math"));
 
 // ==========================================
-// DIFFICULTY SELECTOR
+// DIFFICULTY SELECTOR & OPTIONS
 // ==========================================
 let selectedSubject=null;
 let selectedType="grammar";
+let selectedTopic="mixed";
+let selectedLength=10;
 let selectedDifficulty=null;
 
 function showDifficultySelector(subject){
@@ -132,7 +249,11 @@ selectedSubject=subject;
 selectedType=subject==="english"?"grammar":"quiz";
 document.getElementById("diff-subject-title").textContent=(subject==="english"?"English":"Mathematics")+" — Choose Your Level";
 const tabs=document.getElementById("quiz-type-tabs");
+const tGrp=document.getElementById("quiz-topic-group");
+
 tabs.style.display=subject==="english"?"flex":"none";
+tGrp.style.display=(subject==="english" && selectedType === "grammar")?"block":"none";
+
 // Reset tabs
 document.querySelectorAll(".quiz-type-tab").forEach(t=>{t.classList.remove("active");if(t.dataset.type==="grammar")t.classList.add("active");});
 showView("difficulty");
@@ -146,7 +267,19 @@ tab.addEventListener("click",()=>{
 document.querySelectorAll(".quiz-type-tab").forEach(t=>t.classList.remove("active"));
 tab.classList.add("active");
 selectedType=tab.dataset.type;
+
+const tGrp=document.getElementById("quiz-topic-group");
+tGrp.style.display=(selectedSubject==="english" && selectedType === "grammar")?"block":"none";
+// If they go to reading/writing, length doesn't matter as much, but we keep length input visible
 });
+});
+
+// Watch options
+document.getElementById("quiz-length-select").addEventListener("change", (e) => {
+    selectedLength = parseInt(e.target.value);
+});
+document.getElementById("quiz-topic-select").addEventListener("change", (e) => {
+    selectedTopic = e.target.value;
 });
 
 // Difficulty cards
@@ -160,14 +293,52 @@ else startMCQQuiz();
 });
 
 // ==========================================
-// MCQ QUIZ ENGINE
+// MCQ QUIZ ENGINE (Procedural & Static)
 // ==========================================
 let currentQuiz={subject:null,questions:[],currentIndex:0,answers:[],selectedOption:null};
 
+function buildMathGenerator() {
+    // Quick procedural fallback for Math if they ask for 50-100 questions.
+    return (amount, diff) => {
+        let q = [];
+        for(let i=0; i<amount; i++) {
+            let a = Math.floor(Math.random()*20) + 1;
+            let b = Math.floor(Math.random()*20) + 1;
+            if(diff==="intermediate") { a*=3; b*=5; }
+            if(diff==="advanced") { a*=10; b*=12; }
+            if(diff==="expert") { a*=Math.random(); b=Math.pow(2, Math.floor(Math.random()*5)); } // Mock expert
+            
+            let ans = a + b;
+            let ops = [ans, ans+1, ans-2, ans+5].sort();
+            q.push({ question: `What is ${a} + ${b}?`, options: ops.map(String), correct: ops.indexOf(ans) });
+        }
+        return q;
+    };
+}
+
 function startMCQQuiz(){
-let questions;
-if(selectedSubject==="english")questions=[...quizData.english.grammar[selectedDifficulty]];
-else questions=[...quizData.math[selectedDifficulty]];
+let questions = [];
+
+if(selectedSubject==="english") {
+    // IF length > 10 OR topic is NOT 'mixed', use the Procedural AI Generator!
+    if (selectedLength > 10 || selectedTopic !== "mixed") {
+        questions = window.generateDynamicGrammarQuiz(selectedTopic, selectedLength, selectedDifficulty);
+    } else {
+        // Fallback to handcrafted Oxford ones
+        questions = [...quizData.english.grammar[selectedDifficulty]];
+    }
+} else {
+    // Math
+    if (selectedLength > 10) {
+        questions = buildMathGenerator()(selectedLength, selectedDifficulty);
+    } else {
+        questions = [...quizData.math[selectedDifficulty]];
+    }
+}
+
+// Slice to bounds just in case
+questions = questions.slice(0, selectedLength);
+
 currentQuiz={subject:selectedSubject,questions,currentIndex:0,answers:[],selectedOption:null};
 const label=selectedSubject==="english"?"English Grammar":"Mathematics";
 const diffLabel=selectedDifficulty.charAt(0).toUpperCase()+selectedDifficulty.slice(1);
@@ -216,9 +387,9 @@ function finishMCQQuiz(){
 const correctCount=currentQuiz.answers.filter(a=>a.correct).length;
 const total=currentQuiz.questions.length;
 const pct=Math.round((correctCount/total)*100);
-const xpEarned=correctCount*10+(pct===100?50:0);
-appState.history.push({subject:currentQuiz.subject,type:selectedType||"quiz",difficulty:selectedDifficulty,correct:correctCount,total,percentage:pct,xp:xpEarned,date:new Date().toISOString()});
-updateStreak();saveState(appState);
+const xpEarned=Math.round((correctCount*10)*(1 + (total-10)*0.05)); // bonus multiplier for longer quizzes
+appState.history.push({subject:currentQuiz.subject,type:(selectedSubject==="english"&&selectedType==="grammar")?selectedTopic:"quiz",difficulty:selectedDifficulty,correct:correctCount,total,percentage:pct,xp:xpEarned,date:new Date().toISOString()});
+updateStreak();saveState();
 const color=pct>=80?"var(--accent-green)":pct>=50?"var(--accent-orange)":"var(--accent-red)";
 let title,subtitle;
 if(pct===100){title="🎉 Perfect Score!";subtitle="Amazing! You got every question right!";}
@@ -227,10 +398,11 @@ else if(pct>=50){title="👍 Good Effort!";subtitle="You're on the right track!"
 else{title="💪 Keep Trying!";subtitle="Review the material and try again.";}
 const circ=2*Math.PI*60,offset=circ-(pct/100)*circ;
 document.getElementById("quiz-body").innerHTML=
-'<div class="quiz-results"><div class="results-score-circle"><svg width="160" height="160"><circle class="results-score-bg" cx="80" cy="80" r="60"/><circle class="results-score-fill" cx="80" cy="80" r="60" stroke="'+color+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+circ+'" id="results-ring"/></svg><div class="results-score-value"><div class="score-number">'+pct+'%</div><div class="score-label">Score</div></div></div><h2 class="results-title">'+title+'</h2><p class="results-subtitle">'+subtitle+'</p><div class="results-stats"><div class="results-stat correct-stat"><div class="value">'+correctCount+'</div><div class="label">Correct</div></div><div class="results-stat wrong-stat"><div class="value">'+(total-correctCount)+'</div><div class="label">Wrong</div></div><div class="results-stat"><div class="value">+'+xpEarned+'</div><div class="label">XP Earned</div></div></div><div class="results-actions"><button class="quiz-btn secondary" id="results-back-btn">← Dashboard</button><button class="quiz-btn primary" id="results-retry-btn">Retry ↻</button></div></div>';
+'<div class="quiz-results"><div class="results-score-circle"><svg width="160" height="160"><circle class="results-score-bg" cx="80" cy="80" r="60"/><circle class="results-score-fill" cx="80" cy="80" r="60" stroke="'+color+'" stroke-dasharray="'+circ+'" stroke-dashoffset="'+circ+'" id="results-ring"/></svg><div class="results-score-value"><div class="score-number">'+pct+'%</div><div class="score-label">Score</div></div></div><h2 class="results-title">'+title+'</h2><p class="results-subtitle">'+subtitle+'</p><div class="results-stats"><div class="results-stat correct-stat"><div class="value">'+correctCount+'</div><div class="label">Correct</div></div><div class="results-stat wrong-stat"><div class="value">'+(total-correctCount)+'</div><div class="label">Wrong</div></div><div class="results-stat"><div class="value">+'+xpEarned+'</div><div class="label">XP Earned</div></div></div><div class="results-actions"><button class="quiz-btn secondary" id="results-back-btn">← Dashboard</button><button class="quiz-btn primary" id="results-retry-btn">Try Again ❤️</button><button class="quiz-btn primary" id="results-generate-more">Generate More ↻</button></div></div>';
 requestAnimationFrame(()=>{requestAnimationFrame(()=>{document.getElementById("results-ring").style.strokeDashoffset=offset;});});
 document.getElementById("results-back-btn").addEventListener("click",()=>navigateTo("dashboard"));
 document.getElementById("results-retry-btn").addEventListener("click",startMCQQuiz);
+document.getElementById("results-generate-more").addEventListener("click",startMCQQuiz); // the generator auto-creates new ones!
 }
 
 document.getElementById("quiz-back-btn").addEventListener("click",()=>showDifficultySelector(selectedSubject));
@@ -283,9 +455,9 @@ function finishReading(){
 const correctCount=readingState.answers.filter(a=>a.correct).length;
 const total=readingState.questions.length;
 const pct=Math.round((correctCount/total)*100);
-const xpEarned=correctCount*10+(pct===100?50:0);
+const xpEarned=correctCount*20+(pct===100?50:0);
 appState.history.push({subject:"english",type:"reading",difficulty:selectedDifficulty,correct:correctCount,total,percentage:pct,xp:xpEarned,date:new Date().toISOString()});
-updateStreak();saveState(appState);
+updateStreak();saveState();
 const color=pct>=80?"var(--accent-green)":pct>=50?"var(--accent-orange)":"var(--accent-red)";
 const circ=2*Math.PI*60,offset=circ-(pct/100)*circ;
 document.getElementById("reading-body").innerHTML=
@@ -337,7 +509,6 @@ const vocabDiversity=wordCount>0?Math.round((uniqueWords.size/wordCount)*100):0;
 
 // Grammar checks
 const grammarErrors=[];
-const lowerText=text.toLowerCase();
 const grammarPatterns=[
 {pattern:/\btheir\s+(?:is|was|are|were|going|doing)\b/gi,msg:"Possible confusion of 'their' with 'there' or 'they're'"},
 {pattern:/\bthere\s+(?:car|house|book|dog|cat|friend|mom|dad|brother|sister)\b/gi,msg:"Possible confusion of 'there' with 'their'"},
@@ -351,13 +522,7 @@ const grammarPatterns=[
 grammarPatterns.forEach(p=>{const m=text.match(p.pattern);if(m)grammarErrors.push(p.msg);});
 
 // Spelling check
-let misspelled=0;
 const checkedWords=words.map(w=>w.toLowerCase().replace(/[^a-z']/g,"")).filter(w=>w.length>2);
-checkedWords.forEach(w=>{if(!commonWords.has(w)&&w.length>4){
-// Simple heuristic: very long uncommon words might be misspelled
-// We don't flag short or moderately common-looking words
-}});
-// Count potential issues with doubled letters or common misspellings
 const commonMisspellings=["recieve","seperately","occured","definately","accomodate","occurence","refered","begining","wierd","untill","tommorow","neccessary","goverment","enviroment","acheive","beleive","fourty","grammer","knowlege","libary","mispell","noticable","occassion","posession","publically","recomend","succesful","suprise","truely","writting"];
 let spellingIssues=[];
 checkedWords.forEach(w=>{if(commonMisspellings.includes(w))spellingIssues.push(w);});
@@ -384,7 +549,7 @@ if(overallScore>=90)grade="A";else if(overallScore>=80)grade="B";else if(overall
 
 const xpEarned=Math.round(overallScore/10)*5;
 appState.history.push({subject:"english",type:"writing",difficulty:selectedDifficulty,correct:overallScore,total:100,percentage:overallScore,xp:xpEarned,date:new Date().toISOString()});
-updateStreak();saveState(appState);
+updateStreak();saveState();
 
 // Build feedback
 const color=overallScore>=80?"var(--accent-green)":overallScore>=50?"var(--accent-orange)":"var(--accent-red)";
@@ -475,9 +640,10 @@ container.innerHTML=history.map(r=>{
 const date=new Date(r.date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
 const isEng=r.subject==="english";
 const color=r.percentage>=80?"var(--accent-green)":r.percentage>=50?"var(--accent-orange)":"var(--accent-red)";
-const typeLabel=(r.type||"quiz").charAt(0).toUpperCase()+(r.type||"quiz").slice(1);
+const typeLabel=(r.type||"quiz").replace("_"," ");
+const typeCaps = typeLabel.charAt(0).toUpperCase()+typeLabel.slice(1);
 const diffLabel=r.difficulty?(" · "+r.difficulty.charAt(0).toUpperCase()+r.difficulty.slice(1)):"";
-return '<div class="history-item"><div class="history-icon" style="background:'+(isEng?"rgba(139,92,246,0.15)":"rgba(6,182,212,0.15)")+'">'+(isEng?"📖":"🔢")+'</div><div class="history-info"><h4>'+(isEng?"English":"Math")+' — '+typeLabel+diffLabel+'</h4><p>'+date+(r.type!=="writing"?" · "+r.correct+"/"+r.total+" correct":"")+'</p></div><div class="history-score" style="color:'+color+'">'+r.percentage+'%</div></div>';
+return '<div class="history-item"><div class="history-icon" style="background:'+(isEng?"rgba(217,119,87,0.15)":"rgba(74,139,159,0.15)")+'">'+(isEng?"📖":"🔢")+'</div><div class="history-info"><h4>'+(isEng?"English":"Math")+' — '+typeCaps+diffLabel+'</h4><p>'+date+(r.type!=="writing"?" · "+r.correct+"/"+r.total+" correct":"")+'</p></div><div class="history-score" style="color:'+color+'">'+r.percentage+'%</div></div>';
 }).join("");
 }
 
@@ -508,16 +674,20 @@ if(k&&appState.settings[k]!==undefined)t.classList.toggle("active",appState.sett
 document.querySelectorAll(".toggle-switch").forEach(t=>{
 t.addEventListener("click",()=>{
 const k=t.dataset.setting;
-if(k&&appState.settings[k]!==undefined){appState.settings[k]=!appState.settings[k];t.classList.toggle("active",appState.settings[k]);saveState(appState);}
+if(k&&appState.settings[k]!==undefined){appState.settings[k]=!appState.settings[k];t.classList.toggle("active",appState.settings[k]);saveState();}
 });
 });
 document.getElementById("reset-progress-btn").addEventListener("click",()=>{
-if(confirm("Reset all progress? This cannot be undone.")){appState=getDefaultState();saveState(appState);navigateTo("dashboard");}
+if(confirm("Reset all progress? This cannot be undone for this user.")){appState=getDefaultState();saveState();navigateTo("dashboard");}
 });
 
 // ==========================================
-// INIT
+// INIT APP
 // ==========================================
-updateStreak();
-refreshDashboard();
-renderDailyTasks();
+function initApp() {
+    updateStreak();
+    refreshDashboard();
+    renderDailyTasks();
+}
+
+// Wait for user to log in via Auth Overlay.

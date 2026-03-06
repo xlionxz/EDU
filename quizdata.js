@@ -115,3 +115,134 @@ expert:[
 {question:"In modular arithmetic, 17 mod 5 =",options:["1","2","3","4"],correct:1},
 {question:"The number of subsets of a set with n elements is:",options:["n!","2ⁿ","n²","2n"],correct:1},
 {question:"If z = 3+4i, what is |z|?",options:["5","7","12","25"],correct:0}]}};
+
+// ==========================================
+// PROCEDURAL QUIZ GENERATOR (AI ENGINE)
+// ==========================================
+// Generates infinite unique questions for specific grammar topics
+
+const grammarDict = {
+    nouns: ["cat", "dog", "teacher", "student", "doctor", "car", "book", "computer", "city", "ocean", "mountain", "bird", "tree", "river"],
+    pluralNouns: ["cats", "dogs", "teachers", "students", "doctors", "cars", "books", "computers", "cities", "oceans", "mountains", "birds", "trees", "rivers"],
+    adjectives: ["happy", "sad", "quick", "lazy", "bright", "dark", "heavy", "light", "beautiful", "ugly", "loud", "quiet", "ancient", "modern", "expensive", "cheap", "ubiquitous", "ephemeral"],
+    adverbs: ["quickly", "slowly", "carefully", "carelessly", "quietly", "loudly", "happily", "sadly", "beautifully", "perfectly"],
+    verbs: {
+        present: ["runs", "walks", "jumps", "sleeps", "eats", "drinks", "reads", "writes", "speaks", "listens", "studies", "plays"],
+        past: ["ran", "walked", "jumped", "slept", "ate", "drank", "read", "wrote", "spoke", "listened", "studied", "played"],
+        future: ["will run", "will walk", "will jump", "will sleep", "will eat", "will drink", "will read", "will write", "will speak", "will listen", "will study", "will play"],
+        continuous: ["is running", "is walking", "is jumping", "is sleeping", "is eating", "is drinking", "is reading", "is writing", "is speaking", "is listening", "is studying", "is playing"],
+        past_continuous: ["was running", "was walking", "was jumping", "was sleeping", "was eating", "was drinking", "was reading", "was writing", "was speaking", "was listening", "was studying", "was playing"]
+    },
+    prepositions: ["in", "on", "at", "under", "over", "between", "through", "across", "behind", "in front of"]
+};
+
+// Helper: Pick random item from array
+function pickRandom(arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Ensure option array is shuffled but correct answer is tracked
+function buildQuestion(questionText, correctOption, distractionOptions) {
+    // Collect all options, make sure distraction options are unique and don't include correct
+    let options = new Set();
+    options.add(correctOption);
+    let attempts = 0;
+    while (options.size < 4 && attempts < 20) {
+        options.add(pickRandom(distractionOptions));
+        attempts++;
+    }
+    // If we couldn't find 4 unique, just pad (fallback)
+    let ops = Array.from(options);
+    while (ops.length < 4) ops.push("None of the above" + (ops.length === 3 ? "" : " " + ops.length));
+    
+    // Shuffle
+    for (let i = ops.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ops[i], ops[j]] = [ops[j], ops[i]];
+    }
+    
+    return {
+        question: questionText,
+        options: ops,
+        correct: ops.indexOf(correctOption)
+    };
+}
+
+// Topic Builders
+const topicBuilders = {
+    past_tense: () => {
+        const n = pickRandom(grammarDict.nouns);
+        const templates = [
+            () => {
+                const vi = Math.floor(Math.random() * grammarDict.verbs.past.length);
+                const past = grammarDict.verbs.past[vi];
+                const present = grammarDict.verbs.present[vi];
+                const continuous = grammarDict.verbs.continuous[vi];
+                const future = grammarDict.verbs.future[vi];
+                return buildQuestion(`Yesterday, the ${n} ___ to the park.`, past, [present, continuous, future]);
+            },
+            () => {
+                const vi = Math.floor(Math.random() * grammarDict.verbs.past.length);
+                const past = grammarDict.verbs.past[vi];
+                const present = grammarDict.verbs.present[vi];
+                return buildQuestion(`Choose the correct past tense sentence:`, `The ${n} ${past} all day.`, [
+                    `The ${n} ${present} all day.`,
+                    `The ${n} did ${past} all day.`,
+                    `The ${n} is ${past} all day.`
+                ]);
+            }
+        ];
+        return pickRandom(templates)();
+    },
+    present_simple: () => {
+        const n = pickRandom(grammarDict.nouns);
+        const pn = pickRandom(grammarDict.pluralNouns);
+        const templates = [
+            () => {
+                const vi = Math.floor(Math.random() * grammarDict.verbs.present.length);
+                const verbS = grammarDict.verbs.present[vi]; 
+                const verbBase = verbS.replace(/s$/, ''); // rough heuristic, acceptable for generated tests
+                return buildQuestion(`Every morning, the ${n} ___.`, verbS, [verbBase, verbBase + "ing", "is " + verbBase]);
+            },
+            () => {
+                const vi = Math.floor(Math.random() * grammarDict.verbs.present.length);
+                const verbS = grammarDict.verbs.present[vi]; 
+                const verbBase = verbS.replace(/s$/, ''); 
+                return buildQuestion(`The ${pn} usually ___ at night.`, verbBase, [verbS, "are " + verbS, verbBase + "ing"]);
+            }
+        ];
+        return pickRandom(templates)();
+    },
+    adjectives: () => {
+        const n = pickRandom(grammarDict.nouns);
+        const adj = pickRandom(grammarDict.adjectives);
+        const adv = pickRandom(grammarDict.adverbs);
+        return buildQuestion(`Which word is an adjective in this sentence? "The ${adj} ${n} moved ${adv}."`, adj, [n, adv, "The"]);
+    },
+    prepositions: () => {
+        const n1 = pickRandom(grammarDict.nouns);
+        const n2 = pickRandom(grammarDict.nouns);
+        const prep = pickRandom(grammarDict.prepositions);
+        return buildQuestion(`The ${n1} is ___ the ${n2}.`, prep, grammarDict.prepositions.filter(p => p !== prep));
+    }
+};
+
+function generateDynamicGrammarQuiz(topic, amount, difficulty) {
+    let questions = [];
+    let builderKeys = Object.keys(topicBuilders);
+    
+    // If mixed, we pick randomly. If focused, we use the requested topic.
+    let keysToUse = builderKeys;
+    if (topic !== "mixed" && topicBuilders[topic]) {
+        keysToUse = [topic];
+    }
+    
+    for (let i = 0; i < amount; i++) {
+        const topicKey = pickRandom(keysToUse);
+        questions.push(topicBuilders[topicKey]());
+    }
+    
+    return questions;
+}
+
+window.generateDynamicGrammarQuiz = generateDynamicGrammarQuiz;

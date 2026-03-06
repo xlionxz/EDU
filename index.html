@@ -11,8 +11,18 @@
 </head>
 
 <body>
-
-    <!-- Mobile Toggle -->
+    <!-- Auth Overlay -->
+    <div id="auth-overlay">
+        <div class="auth-card">
+            <div class="auth-brand">EDEDEDI</div>
+            <div class="auth-subtitle" id="auth-subtitle">Login to your account</div>
+            <input type="text" id="auth-username" class="auth-input" placeholder="Username" autocomplete="off">
+            <input type="password" id="auth-password" class="auth-input" placeholder="Password">
+            <div id="auth-error" class="auth-error"></div>
+            <button id="auth-btn" class="auth-btn">Login</button>
+            <div id="auth-toggle" class="auth-toggle">Don't have an account? Sign up here</div>
+        </div>
+    </div>    <!-- Mobile Toggle -->
     <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle sidebar">☰</button>
 
     <!-- Sidebar Overlay (Mobile) -->
@@ -68,13 +78,18 @@
                     <span class="icon">📦</span>
                     <span>Optional Programs</span>
                 </a>
+
+                <a class="nav-item" id="nav-logout" style="margin-top: 16px; border-top: 1px solid var(--bg-glass-border); border-radius: 0;">
+                    <span class="icon">🚪</span>
+                    <span>Log Out</span>
+                </a>
             </nav>
 
             <div class="sidebar-profile">
-                <div class="profile-avatar">S</div>
+                <div class="profile-avatar" id="sidebar-avatar">U</div>
                 <div class="profile-info">
-                    <span class="name">Student User</span>
-                    <span class="level">Level 5 — Scholar</span>
+                    <span class="name" id="sidebar-name">User</span>
+                    <span class="level" id="sidebar-level">Level 1 — Beginner</span>
                 </div>
             </div>
         </aside>
@@ -85,7 +100,7 @@
             <!-- ===== DASHBOARD ===== -->
             <section class="view active" id="view-dashboard">
                 <div class="greeting-banner">
-                    <h2>Welcome back, <span>Student</span> 👋</h2>
+                    <h2>Welcome back, <span id="dash-name">Student</span> 👋</h2>
                     <p>Keep the momentum going! You have tasks waiting for you today.</p>
                     <div class="greeting-date">
                         <div class="day" id="current-day"></div>
@@ -189,6 +204,30 @@
                         <button class="quiz-type-tab active" data-type="grammar">📝 Grammar</button>
                         <button class="quiz-type-tab" data-type="reading">📖 Reading</button>
                         <button class="quiz-type-tab" data-type="writing">✍️ Writing</button>
+                    </div>
+
+                    <!-- Options Panel (Length & Topic) -->
+                    <div class="quiz-options-panel" id="quiz-options-panel">
+                        <div class="quiz-option-group">
+                            <label for="quiz-length-select">Questions Amount</label>
+                            <select id="quiz-length-select">
+                                <option value="10">10 Questions</option>
+                                <option value="20">20 Questions</option>
+                                <option value="25">25 Questions</option>
+                                <option value="50">50 Questions</option>
+                                <option value="100">100 Questions</option>
+                            </select>
+                        </div>
+                        <div class="quiz-option-group" id="quiz-topic-group" style="display: none;">
+                            <label for="quiz-topic-select">Topic Focus</label>
+                            <select id="quiz-topic-select">
+                                <option value="mixed">Mixed Grammar</option>
+                                <option value="past_tense">Past Tense</option>
+                                <option value="present_simple">Present Simple</option>
+                                <option value="adjectives">Adjectives & Adverbs</option>
+                                <option value="prepositions">Prepositions</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="difficulty-grid">
@@ -304,10 +343,10 @@
                     <p>Your learning journey at a glance</p>
                 </div>
                 <div class="profile-header-card">
-                    <div class="profile-avatar-lg">S</div>
+                    <div class="profile-avatar-lg" id="profile-avatar">U</div>
                     <div class="profile-details">
-                        <h2>Student User</h2>
-                        <p>Level 5 — Scholar • Joined March 2026</p>
+                        <h2 id="profile-name">User</h2>
+                        <p id="profile-sub">Level 1 — Beginner • Joined Today</p>
                     </div>
                 </div>
                 <div class="profile-stats-row">
